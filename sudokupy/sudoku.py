@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 """Sudoku"""
 
+import sys
 import random
 
 class Sudoku(object):
@@ -25,12 +26,18 @@ class Sudoku(object):
         self.matrix = [[]] 
 
 
-    def print_matrix(self)->None:
+    def print_matrix(self, id='', format='text')->None:
         """打印二维矩阵，以3个元素为一组，每组之间以竖线“|”分隔，每三行打印一行分隔线。
-        Args:无参数
+        Args:
+            id (str, optional): 矩阵标识符。默认为空字符串。
+            format (str, optional): 输出格式。'text'为纯文本格式，'html'为HTML格式。默认为'text'。
         Returns:
             None
         """
+        if format == 'html':
+            print(f'<pre style="font-size:32pt;page-break-inside:avoid;page-break-after:always;text-align:center;vertical-align:middle;">', end='')
+        print(f'{id}')
+        
         for row in range(len(self.matrix)):
             if row % 3 == 0 and row != 0:
                 print("-" * 20)
@@ -43,7 +50,11 @@ class Sudoku(object):
                 print(s + " ", end="")
             
             print()
-        print('\n')
+        print()
+
+        if format == 'html':
+            print('</pre>')
+
 
     def generate_sudoku(self)->bool:
         """生成数独矩阵
@@ -74,6 +85,7 @@ class Sudoku(object):
                 break
         return x != 0
 
+
     def generate_sudoku_cell(self, row, col)->int:
         """生成数独表中一个单元格的数字，该数字必须满足所在行、列、九宫格的规则。
         Args:
@@ -101,7 +113,7 @@ class Sudoku(object):
         return 0 # 如果没有可用的数字，返回0
 
 
-    def print_debug(self):
+    def print_debug(self)->None:
         """打印调试信息，输出行规则、列规则和九宫格规则。
         Args:
             无
@@ -110,6 +122,7 @@ class Sudoku(object):
         """
         print(f"debug: row {self.row_rule_list}, \ncol {self.col_rule_list}, \nnine grid {self.nine_grid_rule_list}")
     
+
     def generate_mask(self, difficulty = 3):
         """根据难度生成遮罩。
         Args:
@@ -123,15 +136,22 @@ class Sudoku(object):
                 self.matrix[row][col] = 0
 
 if __name__ == '__main__':
-    sudoku = Sudoku()
-    result = sudoku.generate_sudoku()
-    if result:
-        sudoku.print_matrix()
-        #sudoku.print_debug()
-        sudoku.generate_mask(4)
-        sudoku.print_matrix()
+    if len(sys.argv) <= 1:
+        n = 1
+    elif '-h' in sys.argv or '--help' in sys.argv:
+        print(f'Usage: python {sys.argv[0]} <number of sudokus to generate>')
         exit(0)
     else:
-        print('生成失败')
-        exit(-1)
-    
+        n = int(sys.argv[1])
+
+    sudoku = Sudoku()
+    for i in range(n):
+        result = sudoku.generate_sudoku()
+        if result:
+            sudoku.print_matrix(id=f'#{i+1}', format='html')
+            #sudoku.print_debug()
+            sudoku.generate_mask(4)
+            sudoku.print_matrix(id=f'#{i+1}', format='html')
+        else:
+            print(f'生成失败，第{i+1}次', file=sys.stderr)
+            exit(-1)
